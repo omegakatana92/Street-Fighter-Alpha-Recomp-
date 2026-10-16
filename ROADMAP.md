@@ -117,10 +117,12 @@ and the players' health named in `sfa.h` and recorded in `PROGRESS.md`.
 
 - [x] `README.md` states the exact ROM set (`sfa`, Europe 950727) and that **only that revision** works,
       with the Capcom disclaimer.
-- [ ] `rom/`, `build/`, `work/` are ignored and **absent** from the repository; no game data, keys or dumps
-      anywhere; no screenshots beyond the few needed for the README.
+- [x] `rom/`, `build/`, `work/` are ignored and **absent** from the repository; no game data, keys or dumps
+      anywhere (`.github/workflows/check.yml` fails a push that tracks one); no screenshots.
 - [x] `PROGRESS.md` records how each finding was made (a RAM diff, a watch, a trace), not the data.
-- [ ] `make check`, `make check-toolkit`, `make check-common` all pass.
-- [ ] `LICENSE` (GPL-3.0-only) and `THIRD_PARTY_NOTICES.md` (the cipher is MAME's, BSD-3-Clause).
-- [ ] Repo description set (see README's title line / the About field).
-- [ ] First commit made; the repository builds from a fresh clone with the player's own ROM set.
+- [x] `make check`, `make check-toolkit`, `make check-common` all pass (the CI runs the last two).
+- [x] `LICENSE` (GPL-3.0-only) and `THIRD_PARTY_NOTICES.md` (the cipher is MAME's, BSD-3-Clause); the
+      release archives carry them and the licences of what they ship.
+- [x] Repo description set (see README's title line / the About field).
+- [x] First commit made; the repository builds from a fresh clone with the player's own ROM set
+      (`make`, `make explore`, `make launcher`). The first release, `v0.1.0-beta.1`, is up.
