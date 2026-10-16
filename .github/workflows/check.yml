@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# The repository's own checks: that the toolkit copy and the shared code are exactly what their sync
+# scripts recorded, and that no game data has been committed. The port is not built here: building it
+# needs a ROM set, which CI has none of, so releases are made by hand (tools/release/README.md).
+name: check
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  repo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The toolkit copy and the shared code are untouched
+        run: make check-toolkit check-common
+      - name: No ROM set, key or save state is committed
+        run: |
+          if git ls-files | grep -qiE '(^|/)rom/|\.(zip|key)$|(^|/)state[0-9]*\.bin$'; then
+            echo "::error::a ROM set, key or save state is tracked:"
+            git ls-files | grep -iE '(^|/)rom/|\.(zip|key)$|(^|/)state[0-9]*\.bin$'
+            exit 1
+          fi
+          echo "ok: no game data is tracked"

@@ -1,0 +1,15 @@
+# Text is stored and checked out as LF on every machine. It matters here: the shell scripts are run by
+# sh and the Makefile by make (a CRLF Makefile breaks its line continuations), and the port is built on
+# Linux, in MSYS2 and on macOS from the same working copies.
+* text=auto eol=lf
+
+*.sh text eol=lf
+AppRun text eol=lf
+LICENSE text eol=lf
+
+# The toolkit copy has to stay byte-for-byte what its tools/sync-toolkit.sh recorded, because
+# `make check-toolkit` hashes it. Never let git rewrite its line endings.
+cps2recomp/** -text
+
+# Binary: never touch it.
+*.png binary

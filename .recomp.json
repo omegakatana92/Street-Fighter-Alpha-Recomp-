@@ -1,0 +1,15 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "Street Fighter Alpha: Warriors' Dreams",
+  "wikidata": "Q1131356",
+  "system": "Arcade",
+  "type": "recomp",
+  "original": {"region": "Europe", "revision": "950727"},
+  "project": "Street Fighter Alpha Recomp",
+  "status": "in-progress",
+  "targets": ["Windows", "Linux", "Steam Deck"],
+  "toolchain": "cps2recomp",
+  "approach": "Static recompilation of the CPS-2 board's 68000 and Z80 programs to C++, on its own CPS-2 machine with no emulator",
+  "maintainers": [{"name": "omegakatana92", "link": "https://github.com/omegakatana92"}],
+  "tags": ["CPS-2", "fighting", "training mode"]
+}

@@ -1,0 +1,12 @@
+# never commit game data or anything derived from it
+rom/
+*.zip
+*.key
+build/
+work/
+*.state
+state*.bin
+.DS_Store
+__pycache__/
+*.log
+shots/
