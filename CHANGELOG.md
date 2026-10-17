@@ -1,6 +1,6 @@
 # Street Fighter Alpha Recomp — changelog
 
-## Unreleased
+## 0.1.0-beta.2
 
 - `full_gauge` (Cheats): both players' LEVEL (POWER) bars are held full, so a super is always ready.
 - `input_display` (Training) now turns its notation to the player's own side, using the game's facing byte.
