@@ -26,7 +26,9 @@ Built on the game's own memory (`games/sfa/src/`):
 - `no_damage`, `no_damage_2` — a player's health is put back to the round's full value every frame.
 - `infinite_time` — the round's clock (both of the game's copies) stands still.
 - `one_hit` — the opponent is left a single point of health.
-- `input_display` (Training) — what each player holds, and for how long, at their side of the picture.
+- `full_gauge` — both players' LEVEL (POWER) bars are held full, so a super is always ready.
+- `input_display` (Training) — what each player holds, and for how long, at their side of the picture, with
+  the notation turned to the player's own side (the game's facing byte).
 
 `--list-features` shows these with the toolkit's.
 
@@ -34,11 +36,12 @@ Built on the game's own memory (`games/sfa/src/`):
 
 ### 0. Foundation — know the game's memory
 
-Partly done: the credits, the round's clock and the two players' records (health, and a frame counter)
-are found and named in `games/sfa/src/sfa.h`. What is still wanted is the rest of the player record —
-positions, facing, and the state that says a move is out — which is what the training aids are built
-from. The record from `+0x000` to `+0x3FF` is busy with values that move every frame; picking them out
-is the next job.
+Mostly done: the credits, the round's clock and the two players' records are found and named in
+`games/sfa/src/sfa.h` — the health (and what the bars are drawn from), a frame counter, and now the
+positions (`+0x10` across, `+0x14` up), which way each player faces (`+0x0A`), the state that says what a
+player is doing (`+0x06`) and the LEVEL bar's value (`+0xBE`). What is still wanted is the whole set of
+values the state word takes — hitstun, guarding, knocked down, the throws — which is what the frame data
+and the dummy are built from.
 
 How the toolkit finds these (all documented in `docs/FEATURES.md`):
 
@@ -57,7 +60,7 @@ Mostly done; the quick wins below are the ones left.
 
 | Feature | Kind | Needs |
 | --- | --- | --- |
-| `full_gauge` (the POWER bars) | on/off | the value behind each player's bar at the bottom of the picture |
+| `full_gauge` (the POWER bars) — **done** | on/off | the value behind each player's bar at the bottom of the picture (`+0xBE`, found) |
 | `infinite_time` as a choice of minutes | choice | the round's clock word (found) and the round state |
 | Board/operator settings (difficulty, round time, free play) | choices | reading the EEPROM's operator settings |
 | "The game's own test menu" | command | a routine address to jump to |
@@ -66,8 +69,8 @@ Mostly done; the quick wins below are the ones left.
 
 | Piece | What it adds | Needs |
 | --- | --- | --- |
-| Input display (done) | what the stick holds, and for how long | the player's facing, so the notation can be turned to the player's side |
-| Frame data | startup, active, recovery, and the advantage after a hit | the state that says a move is out, per player |
+| Input display (done) | what the stick holds, and for how long | — (the facing byte `+0x0A` is found, so the notation is turned to the player's side) |
+| Frame data | startup, active, recovery, and the advantage after a hit | the state that says a move is out, per player (the state word `+0x06` is found; its values are not all told apart) |
 | Combo readout | hits, damage, and what of it comes back | the damage rule (a rewrite) |
 | The dummy (player 2) | stand, crouch, jump, guard, record and replay | the game's idea of a round and of guarding |
 | Hit boxes | the players' and projectiles' boxes, drawn on the picture | the box tables and the camera's place |
@@ -103,15 +106,17 @@ and the widescreen possible, and it is the part most worth doing carefully.
 ## Recommended order
 
 1. **The rest of the player record** — positions, facing, the move state; everything else builds on it.
-2. **`full_gauge` and the operator settings** — small, fills out the Features page.
+   *Positions, facing and the state word are found; telling the state's values apart is what is left.*
+2. **`full_gauge` and the operator settings** — small, fills out the Features page. *`full_gauge` is done.*
 3. **Training mode** — the frame data, the combo readout, the dummy and the hit boxes, on the toolkit's
    `fight/` parts.
 4. **Readable rewrites** — needed by 3 and 5, and correctness.
 5. **Widescreen.**
 6. **Alternative modes.**
 
-**Done so far:** free play, the cheats and the input display (`games/sfa/src/`); the credits, the clock
-and the players' health named in `sfa.h` and recorded in `PROGRESS.md`.
+**Done so far:** free play, the cheats (including `full_gauge`) and the input display (`games/sfa/src/`);
+the credits, the clock, the players' health, positions, facing, state word and LEVEL bar named in `sfa.h`
+and recorded in `PROGRESS.md`.
 
 ## Before uploading: a checklist
 

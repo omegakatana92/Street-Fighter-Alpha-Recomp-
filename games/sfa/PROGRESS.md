@@ -42,6 +42,22 @@ drains down a step at a time: the two are the health and what the bars are drawn
 player 1's pair to a small value emptied player 1's bar and left player 2's alone, and the other way round,
 which fixed which is which and which bar each one is.
 
+**The rest of the player record.** The record is busy with values that move every frame, so two tricks told
+them apart. First, a run was driven by hand: a real match (free play + `--auto` reaches one at about frame
+2420, through the attract show's own "JOIN IN" demo) was recorded as an input movie, and the recorded
+changes up to a chosen frame were replayed with controlled stick and button presses added after it — so the
+game did known things at known frames. Second, a guess was tried with `--poke` and the picture watched:
+writing `+0x10` moved the character across the stage and writing `+0x14` moved it up and down, which fixed
+the two positions (the jump's trace then rises and falls). The facing came from moving player 1 past player
+2 with `--poke` and diffing the record, then checking each candidate against the two records' X over a
+9000-frame match. The state word came from dumping the record at each known state (standing, walking,
+crouching, in the air, attacking) and reading off the values that changed.
+
+**The LEVEL bar.** With no single value obviously a meter, each word of player 1's record was written with
+`--poke` in turn and the bar cropped out of the picture: `+0xBE` filled it. `0x48` filled it about half and
+`0x90` showed MAX, which fixed the value and its full reading. Its copy at `+0x148` moved with it but did
+not drive the bar.
+
 ## The memory so far
 
 | Address | Size | What | How it was found |
@@ -52,6 +68,11 @@ which fixed which is which and which bar each one is.
 | `FF8400` (+`FF8800`) | record | **Player 1 (player 2)'s record**, the two 0x400 apart; each record's word at `+0x2A` points at the other, which is what fixed the pair | Found with the health words below. |
 | `FF8440` (+`FF8840`) | word | **Player 1 (player 2) health**: 0x90 at a round's start, steps down as hits land, 0 outside a round | Traced a real match for a word that stepped down on hits; a `--poke` emptied that player's bar and not the other's. |
 | `FF8442` (+`FF8842`) | word | The same health again: **what the bars are drawn from**, draining a step at a time | Moves with the health word; poking both to a small value is what showed the bar follows the second one too. |
+| `FF8410` (+`FF8810`) | word | **Player 1 (player 2)'s place across the stage**: larger is further right | `--poke`d the word to `0x0300` and the character moved to the right of the picture; to `0x0040` and it moved to the left. |
+| `FF8414` (+`FF8814`) | word | **Player 1 (player 2)'s height above the floor**: about `0x28` standing, `0x7C` at a jump's top | `--poke`d it to `0x00` (the character sank to the floor) and to `0xE0` (it floated to the top); a jump's trace rises and falls. |
+| `FF840A` (+`FF880A`) | word | **Which way player 1 (player 2) faces**: 1 while the opponent is to its right, 0 while to its left | Moved player 1 past player 2 with `--poke` and diffed the record; the flag then matched the two records' X over a 9000-frame match (99.4%, allowing a few frames of lag). |
+| `FF8406` (+`FF8806`) | word | **What a player is doing** (the game's own state): `0x0002` standing, `0x0004` crouching, `0x0400` walking, `0x0602` in the air, `0x0A02` attacking, among others | Dumped the record at known states of a driven movie and read off the values that changed. |
+| `FF84BE` (+`FF88BE`) | word | **The LEVEL (POWER) bar**: fills as the round is fought, `0x90` at MAX | `--poke`d each word of the record in turn and watched the bar; `+0xBE` filled it (`0x48` half, `0x90` MAX), while its copy at `+0x148` did not. |
 
 The health words are 0 outside a round (and in the attract show), which is what the cheats use to tell a
 round from everything else.
@@ -65,21 +86,19 @@ round from everything else.
 | `no_damage_2` | Cheats | The same for player 2 (the opponent's, in a one-player game). |
 | `infinite_time` | Cheats | Holds the round's clock (both copies) where it stood when the round began, so it never runs out. |
 | `one_hit` | Cheats | Leaves the opponent (player 2) a single point of health, so any hit ends the round. |
-| `input_display` | Training | What each player holds, and for how long, at their side of the picture. The first training aid: it is the toolkit's `fight::InputHistory` (the notation, the hold counts) fed from the port's own panel bits, so it needed no new address. The game's facing byte is still unknown, so the notation is not yet turned to the player's side. |
+| `full_gauge` | Cheats | Holds both players' LEVEL (POWER) bars full (`+0xBE`, and its copy `+0x148`), so a super is always ready. |
+| `input_display` | Training | What each player holds, and for how long, at their side of the picture. The first training aid: it is the toolkit's `fight::InputHistory` (the notation, the hold counts) fed from the port's own panel bits and the game's facing byte, so the notation is turned to the player's side. |
 
 Each was checked with no window: `free_play` against the title (a match starts with no coin), `no_damage`
 against a running match (the bar stays full and the health word stays at the round's value), `infinite_time`
-against the two digits (they stand still), and `one_hit` against the opponent's bar (it opens empty).
+against the two digits (they stand still), `one_hit` against the opponent's bar (it opens empty), and
+`full_gauge` against the LEVEL bar (it reads MAX with the feature on and fills as usual with it off).
 
 ## Next
 
-- The **rest of the player record**: positions, facing, and the state that says a move is out are not yet
-  picked out of the values that move every frame (the record from `+0x000` to `+0x3FF` is busy with
-  animation, positions and the like; `+0xD6` counts up a step a frame, which is a frame counter of the
-  record). They are what the training aids (a hit box, the frame data, the dummy's own guarding) are built
-  from.
-- The **LEVEL / POWER bars** for a `full_gauge` cheat: the value behind each player's bar at the bottom of
-  the picture was not among the values that grow over an idle round, so it still wants finding. The word at
-  `+0x14` fills and empties while a round is fought and is a candidate.
+- The **state word's values**: `+0x06` is found and its common values are known (standing, crouching,
+  walking, in the air, attacking), but the whole set — hitstun, guarding, knocked down, the throws — is not
+  yet told apart, and the toolkit's frame data (`fight::Frames`) wants exactly that (`StepView`: what a
+  player is doing, and whether its attack box is out). It is the next thing the training aids are built from.
 - A **rewrite of the damage rule** (`docs/READABLE.md`) for a cleaner `one_hit` than holding the health at
   one point — the same next step the other ports have.

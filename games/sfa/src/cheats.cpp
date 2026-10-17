@@ -75,6 +75,13 @@ namespace {
             SetRam16(Player(1) + kHealth, 1);
             SetRam16(Player(1) + kHealthShown, 1);
         }
+        // The POWER (LEVEL) bars: both players' bars are held full, so a super is always ready.
+        if (FeatureOn("full_gauge")) {
+            for (int n = 0; n < 2; n++) {
+                SetRam16(Player(n) + kGauge, kGaugeFull);
+                SetRam16(Player(n) + kGaugeCopy, kGaugeFull);
+            }
+        }
     }
 } // namespace
 
@@ -98,6 +105,8 @@ void RegisterCheats() {
     game.features.push_back({"infinite_time", "Cheats", "Infinite time", "The round's clock stands still."});
     game.features.push_back(
         {"one_hit", "Cheats", "One-hit knockouts", "Player 2 (the opponent, in a one-player game) goes down with the first hit."});
+    game.features.push_back({"full_gauge", "Cheats", "Full POWER bars",
+                             "Both players' LEVEL (POWER) bars are held full, so a super is always ready."});
 }
 
 } // namespace cps2recomp
